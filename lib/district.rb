@@ -14,5 +14,4 @@ class District
   def enrollment
     Enrollment.new(@name)
   end
-
 end
