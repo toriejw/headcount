@@ -3,7 +3,7 @@ require_relative '../lib/statewide_testing'
 class StatewideTestingTest < Minitest::Test
   attr_reader :statewide_testing
   def setup
-    @statewide_testing = StatewideTesting.new("ACADEMY 20")
+    @statewide_testing = StatewideTesting.new("ACADEMY 20", DataParser.new)
   end
 
   def test_is_associated_with_a_district
@@ -65,14 +65,39 @@ class StatewideTestingTest < Minitest::Test
     assert_equal 0.818, asian_math_scores_in_2012
   end
 
-  def test_returns_numbers_truncated_at_3_decimals # separate test for each?
+  def test_proficient_for_subject_in_year_returns_unknowndata_error_if_wrong_arguments_entered
+    assert_raises (UnknownDataError::StandardError) { statewide_testing.proficient_for_subject_in_year(:history, 2011) }
+    assert_raises (UnknownDataError::StandardError) { statewide_testing.proficient_for_subject_in_year(:math, 1900) }
+  end
+
+  def test_can_return_proficiency_for_subject_in_year
+    expected_math_scores_in_2012 = {3 => 0.830, 8 => 0.681}
+    actual_math_scores_in_2012   = statewide_testing.proficient_for_subject_in_year(:math, 2012)
+    assert_equal expected_math_scores_in_2012, actual_math_scores_in_2012
+  end
+
+  def test_proficient_by_grade_returns_numbers_truncated_at_3_decimals
     data_length = statewide_testing.proficient_by_grade(3)[2014][:reading].to_s.size
     assert_equal 5, data_length
+  end
+
+  def test_by_race_or_ethnicity_returns_numbers_truncated_at_3_decimals
     data_length = statewide_testing.proficient_by_race_or_ethnicity(:black)[2012][:math].to_s.size
     assert_equal 5, data_length
+  end
+
+  def test_proficient_for_subject_by_grade_in_year_returns_numbers_truncated_at_3_decimals
     data_length = statewide_testing.proficient_for_subject_by_grade_in_year(:reading, 8, 2011).to_s.size
     assert_equal 5, data_length
+  end
+
+  def test_can_return_proficiency_for_subject_by_race_in_year_returns_numbers_truncated_at_3_decimals
     data_length = statewide_testing.proficient_for_subject_by_race_in_year(:math, :black, 2012).to_s.size
+    assert_equal 5, data_length
+  end
+
+  def test_proficiency_for_subject_in_year_returns_numbers_truncated_at_3_decimals
+    data_length = statewide_testing.proficient_for_subject_in_year(:math, 2011)[3].to_s.size
     assert_equal 5, data_length
   end
 

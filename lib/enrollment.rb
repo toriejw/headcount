@@ -1,10 +1,18 @@
+require_relative 'unknown_data_error'
+require_relative 'checking_valid_data'
+
 class Enrollment
   attr_reader :district_name
-  def initialize(district_name)
+  include CheckingValidData
+
+  def initialize(district_name, parser)
     @district_name = district_name
+    @parser = parser
+    @data = parser.load_enrollment_data
   end
 
   def dropout_rate_in_year(year)
+    return nil unless valid_year?(year)
 
   end
 #

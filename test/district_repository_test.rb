@@ -5,7 +5,7 @@ require_relative '../lib/district_repository.rb'
 class DistrictRepositoryTest < Minitest::Test
   attr_reader :dr, :file_path
   def setup
-    @dr = DistrictRepository.new
+    @dr = DistrictRepository.new(DataParser.new)
     @file_path = File.expand_path('fixtures/Pupil enrollment.csv', __dir__)
     dr.load(file_path)
   end
@@ -20,7 +20,7 @@ class DistrictRepositoryTest < Minitest::Test
 
   def test_can_import_districts_to_repository_from_file
     dr.load(file_path)
-    assert_equal ["ACADEMY 20", "ADAMS COUNTY 14"], dr.districts
+    assert_equal ["COLORADO", "ACADEMY 20", "ADAMS COUNTY 14"], dr.districts
   end
 
   def test_can_search_districts_by_name
@@ -34,7 +34,7 @@ class DistrictRepositoryTest < Minitest::Test
   end
 
   def test_name_search_returns_nil_if_name_not_found
-    district = dr.find_by_name("Colorado")
+    district = dr.find_by_name("turing")
     assert_equal nil, district
   end
 
@@ -50,12 +50,12 @@ class DistrictRepositoryTest < Minitest::Test
 
   def test_search_by_name_fragments_returns_all_matches
     result = dr.find_all_matching("A")
-    assert_equal ["ACADEMY 20", "ADAMS COUNTY 14"], result
+    assert_equal ["COLORADO", "ACADEMY 20", "ADAMS COUNTY 14"], result
   end
 
   def test_search_by_name_fragments_is_case_insensitive
     result = dr.find_all_matching("a")
-    assert_equal ["ACADEMY 20", "ADAMS COUNTY 14"], result
+    assert_equal ["COLORADO", "ACADEMY 20", "ADAMS COUNTY 14"], result
   end
 
   def test_search_by_name_fragments_returns_empty_array_if_no_matches

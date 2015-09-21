@@ -1,29 +1,36 @@
-require_relative './data_parser'
-require_relative './district'
+require_relative 'data_parser'
+require_relative 'district'
 
 class DistrictRepository
+  attr_reader :parser
   attr_accessor :districts, :data
 
-  def initialize
+  def initialize(parser)
+    @parser = parser
     @districts = []
     @data = nil
   end
 
+  def self.from_csv(data_dir)
+    file = File.expand_path("Pupil enrollment.csv", data_dir)
+    load(file)
+  end
+
   def load(input_file)
-    self.districts = DataParser.load_districts(input_file)
+    self.districts = parser.load_districts(input_file)
     load_data
   end
 
   def load_data
-    @data = DataParser.load_data
+    @data = parser.load_data
   end
 
   def load_statewide_testing_data
-    DataParser.load_statewide_testing_data
+    parser.load_statewide_testing_data
   end
 
   def find_by_name(name)
-    District.new(name) if districts.include?(name.upcase)
+    District.new(name, parser) if districts.include?(name.upcase)
   end
 
   def find_all_matching(word_fragment)

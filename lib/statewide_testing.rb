@@ -1,16 +1,15 @@
-require_relative './district_repository'
-require 'pry'
-
-class UnknownDataError < StandardError
-end
+require_relative 'district_repository'
+require_relative 'unknown_data_error'
+require_relative 'checking_valid_data'
 
 class StatewideTesting # TODO keep_if is destructive...want to keep original data
+  include CheckingValidData
   attr_reader :district_name, :data
   attr_accessor :dr
-  def initialize(district_name)
+  def initialize(district_name, parser)
     @district_name = district_name
-    @dr = DistrictRepository.new
-    @data = @dr.load_statewide_testing_data
+    @parser = parser
+    @data = parser.load_statewide_testing_data
   end
 
   def proficient_by_grade(grade)
@@ -44,33 +43,12 @@ class StatewideTesting # TODO keep_if is destructive...want to keep original dat
   def proficient_for_subject_in_year(subject, year)
     raise UnknownDataError unless (valid_subject?(subject) && valid_year?(year))
 
-    # Example:
-    # statewide_testing.proficient_for_subject_in_year(:math, 2012) # => 0.680
-  end
-
-  def valid_subject?(subject)
-    [:math, :reading, :writing].include?(subject.downcase)
-  end
-
-  def valid_grade?(grade)
-    [3, 8].include?(grade)
-  end
-
-  def valid_race?(race)
-    ["Asian", "Black", "Pacific Islander", "Hispanic",
-     "Native American", "Two or more", "White"].include?(race)
-  end
-
-  def valid_year?(year)
-    data[:valid_years].include?(year.to_s)
-  end
-
-  def valid_inputs_for_grade?(subject, grade, year)
-    (valid_subject?(subject) && valid_grade?(grade) && valid_year?(year))
-  end
-
-  def valid_inputs_for_race?(subject, race, year)
-    (valid_subject?(subject) && valid_race?(race) && valid_year?(year))
+    output= {}
+    valid_grades.each do |grade|
+      data = proficient_for_subject_by_grade_in_year(subject, grade, year)
+      output = output.merge({grade => data})
+    end
+    output
   end
 
   def format_by_subject(math, reading, writing)
