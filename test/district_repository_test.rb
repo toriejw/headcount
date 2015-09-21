@@ -1,5 +1,7 @@
 require_relative '../lib/district_repository.rb'
 
+# don't use fixtures?
+
 class DistrictRepositoryTest < Minitest::Test
   attr_reader :dr, :file_path
   def setup
@@ -10,6 +12,10 @@ class DistrictRepositoryTest < Minitest::Test
 
   def test_has_list_of_districts
     assert dr.districts
+  end
+
+  def test_has_data
+    assert dr.data
   end
 
   def test_can_import_districts_to_repository_from_file

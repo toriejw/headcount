@@ -1,13 +1,3 @@
- # The instance of this object represents data from the following files:
-#
-# Dropout rates by race and ethnicity.csv
-# High school graduation rates.csv
-# Kindergartners in full-day program.csv
-# Online pupil enrollment.csv
-# Pupil enrollment by race_ethnicity.csv
-# Pupil enrollment.csv
-# Special education.csv
-
 class Enrollment
   attr_reader :district_name
   def initialize(district_name)
