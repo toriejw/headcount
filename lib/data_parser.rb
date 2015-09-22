@@ -38,7 +38,7 @@ class DataParser
     @valid_years = []
     statewide_testing_data = parse_data_from(statewide_files)
     enrollment_data        = parse_data_from(enrollment_files)
-    economic_data  = parse_data_from(economic_files)
+    economic_data          = parse_data_from(economic_files)
 
     data = {statewide_testing: statewide_testing_data,
             enrollment:        enrollment_data,
@@ -77,7 +77,7 @@ class DataParser
     files.each do |key, file|
       file = File.join(data_dir, file)
       file_path = File.expand_path(file, __dir__)
-      data[key] = CSV.read(file_path, headers: true, header_converters: :symbol)
+      data[key] = CSV.read(file_path, :headers => true, :header_converters => :symbol)
                      .map(&:to_h)
       data[key].each { |data| @valid_years << data[:timeframe] }
     end
@@ -86,5 +86,5 @@ class DataParser
 end
 
 # DataParser.load_districts('/Users/Torie/Documents/turing/module_1/projects/headcount/data/Pupil enrollment.csv')
-# data = DataParser.load_statewide_testing_data
-# puts data[:statewide_testing].keys
+# data = DataParser.new.load_enrollment_data
+# data[:enrollment][:by_race_ethnicity].size # => 22378

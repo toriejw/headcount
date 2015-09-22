@@ -76,6 +76,8 @@ class StatewideTestingTest < Minitest::Test
     assert_equal expected_math_scores_in_2012, actual_math_scores_in_2012
   end
 
+  # THESE DON'T TEST TRUNCATION, ONLY NUM DECIMALS
+
   def test_proficient_by_grade_returns_numbers_truncated_at_3_decimals
     data_length = statewide_testing.proficient_by_grade(3)[2014][:reading].to_s.size
     assert_equal 5, data_length

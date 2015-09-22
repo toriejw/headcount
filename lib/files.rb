@@ -1,4 +1,4 @@
-class Files
+class Files # CHANGE TO CAMEL CASE - different systems handle spaces differently
   def self.statewide_testing_files
     {third_grade:  "3rd grade students scoring proficient or above on the CSAP_TCAP.csv",
      eighth_grade: "8th grade students scoring proficient or above on the CSAP_TCAP.csv",

@@ -5,7 +5,7 @@ class DistrictRepository
   attr_reader :parser
   attr_accessor :districts, :data
 
-  def initialize(parser)
+  def initialize(parser = DataParser.new)
     @parser = parser
     @districts = []
     @data = nil
@@ -13,6 +13,7 @@ class DistrictRepository
 
   def self.from_csv(data_dir)
     file = File.expand_path("Pupil enrollment.csv", data_dir)
+    # require 'pry'; binding.pry
     load(file)
   end
 

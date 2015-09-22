@@ -1,11 +1,13 @@
 require_relative 'district_repository'
-require_relative 'unknown_data_error'
+require_relative 'errors'
 require_relative 'checking_valid_data'
+require_relative 'formatting_data'
 
 class StatewideTesting # TODO keep_if is destructive...want to keep original data
   include CheckingValidData
+  include FormattingData
   attr_reader :district_name, :data
-  attr_accessor :dr
+
   def initialize(district_name, parser)
     @district_name = district_name
     @parser = parser
@@ -66,30 +68,13 @@ class StatewideTesting # TODO keep_if is destructive...want to keep original dat
   end
 
   def format_data_by_race(race, data_segment)
-    data_by_district = pull_district_data(data_segment)
+    data_by_district          = pull_district_data(data_segment)
     data_by_district_and_race = pull_race_data(race, data_segment)
     group_by_year(data_by_district_and_race)
   end
 
-  def format_race(race)
-    race = race.to_s.capitalize
-    case race
-    when "Pacific_islander"
-      race = "Hawaiian/Pacific Islander"
-    when "Native_american"
-      race = "Native American"
-    when "Two_or_more"
-      race = "Two or more"
-    end
-    race
-  end
-
   def pull_race_data(race, data_segment)
     data_segment.keep_if { |data| data[:race_ethnicity] == race }
-  end
-
-  def pull_district_data(data_segment)
-    data_segment.keep_if { |data| data[:location] == district_name }
   end
 
   def pull_district_data_by_grade(grade)
@@ -99,17 +84,6 @@ class StatewideTesting # TODO keep_if is destructive...want to keep original dat
     when 8
       pull_district_data(data[:statewide_testing][:eighth_grade])
     end
-  end
-
-  def group_by_year(district_data)
-    district_data.group_by { |data| data[:timeframe] }
-  end
-
-  def format_number(num)
-    if num.length > 5
-      num = num[0..4]
-    end
-    num.to_f
   end
 
   def format_data(data_by_year, var_of_interest)
