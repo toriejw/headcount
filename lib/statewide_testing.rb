@@ -1,4 +1,5 @@
-require_relative 'district_repository'
+# require_relative 'district_repository'
+require_relative 'data_parser'
 require_relative 'errors'
 require_relative 'checking_valid_data'
 require_relative 'formatting_data'
@@ -9,9 +10,9 @@ class StatewideTesting # TODO keep_if is destructive...want to keep original dat
   attr_reader :district_name, :data
 
   def initialize(district_name, parser)
-    @district_name = district_name
-    @parser = parser
-    @data = parser.load_statewide_testing_data
+    @district_name ||= district_name
+    @parser          = parser
+    @data          ||= parser.load_statewide_testing_data
   end
 
   def proficient_by_grade(grade)

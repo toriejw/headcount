@@ -5,9 +5,9 @@ class DataParserTest < Minitest::Test
               :economic_testing_files, :enrollment_testing_files,
               :parser
   def setup
-    @file_path = File.expand_path('fixtures/Pupil enrollment.csv', __dir__)
-    @parser = DataParser.new
-    @data = parser.load_data
+    @file_path               = File.expand_path('fixtures/Pupil enrollment.csv', __dir__)
+    @parser                  = DataParser.new
+    @data                  ||= parser.load_data
     @statewide_testing_files = {third_grade:  "3rd grade students scoring proficient or above on the CSAP_TCAP.csv",
                                 reading:      "Average proficiency on the CSAP_TCAP by race_ethnicity_ Reading.csv",
                                 writing:      "Average proficiency on the CSAP_TCAP by race_ethnicity_ Writing.csv"

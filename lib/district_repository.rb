@@ -2,42 +2,46 @@ require_relative 'data_parser'
 require_relative 'district'
 
 class DistrictRepository
-  attr_reader :parser
-  attr_accessor :districts, :data
-
-  def initialize(parser = DataParser.new)
-    @parser = parser
-    @districts = []
-    @data = nil
-  end
-
   def self.from_csv(data_dir)
-    file = File.expand_path("Pupil enrollment.csv", data_dir)
-    # require 'pry'; binding.pry
-    load(file)
+    # file   = File.expand_path("Pupil enrollment.csv", data_dir)
+    parser = DataParser.new(data_dir)
+    DistrictRepository.new(parser)
   end
 
-  def load(input_file)
-    self.districts = parser.load_districts(input_file)
-    load_data
+  # def self.load(input_file)
+  #   self.districts = parser.load_districts(input_file)
+  #   load_data
+  # end
+  #
+  # def load_data
+  #   @data = parser.load_data
+  # end
+  attr_accessor :districts_by_name, :parser
+
+  def initialize(parser)
+    @parser            = parser
+    @districts_by_name = parser.district_names
+                               .map { |name| [name, District.new(name, parser)] }
+                               .to_h
   end
 
-  def load_data
-    @data = parser.load_data
-  end
 
   def load_statewide_testing_data
     parser.load_statewide_testing_data
   end
 
+  def districts
+    @districts_by_name.keys
+  end
+
   def find_by_name(name)
-    District.new(name, parser) if districts.include?(name.upcase)
+    @districts_by_name[name.upcase]
   end
 
   def find_all_matching(word_fragment)
     matches = []
-    districts.each do |district|
-      matches << district if district =~ /(#{word_fragment})/i
+    @districts_by_name.each do |name, district|
+      matches << name if name =~ /(#{word_fragment})/i
     end
     matches
   end

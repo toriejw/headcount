@@ -4,7 +4,7 @@ require_relative 'enrollment'
 class District
   attr_reader :name, :parser
   def initialize(name, parser)
-    @name = name.upcase
+    @name   = name.upcase
     @parser = parser
   end
 

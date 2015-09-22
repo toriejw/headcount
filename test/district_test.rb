@@ -4,7 +4,7 @@ class DistrictTest < Minitest::Test
   attr_reader :district
 
   def setup
-    @district = District.new("sample", DataParser.new)
+    @district ||= District.new("sample", DataParser.new)
   end
 
   def test_has_a_name_that_is_upcased

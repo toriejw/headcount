@@ -3,7 +3,7 @@ require_relative '../lib/enrollment'
 class EnrollmentTest < Minitest::Test
   attr_reader :enrollment
   def setup
-    @enrollment = Enrollment.new("ACADEMY 20", DataParser.new)
+    @enrollment ||= Enrollment.new("ACADEMY 20", DataParser.new)
   end
 
   def test_is_associated_with_a_district
@@ -238,22 +238,55 @@ class EnrollmentTest < Minitest::Test
     assert_equal 0.004, enrollment.participation_by_race_or_ethnicity_in_year(2012)[:pacific_islander]
   end
 
-  ###########
-
-  def test_can_special_education_by_year
-    skip
+  def test_can_return_special_education_by_year
     special_education = { 2009 => 0.075,
+                          2011 => 0.079,
+                          2012 => 0.078,
+                          2013 => 0.079,
                           2010 => 0.078,
-                          2011 => 0.072,
-                          2012 => 0.071,
-                          2013 => 0.070,
-                          2014 => 0.068,
+                          2014 => 0.079
                         }
     assert_equal special_education, enrollment.special_education_by_year
   end
 
-  def test_can_special_education_by_year_truncates_at_3_decimals
-    skip
-    assert_equal 0.071, enrollment.special_education_by_year[2012]
+  def test_special_education_by_year_truncates_at_3_decimals
+    assert_equal 0.078, enrollment.special_education_by_year[2012]
+  end
+
+  def test_special_ed_in_year_returns_nil_if_invalid_year_given
+    refute enrollment.special_education_in_year(1900)
+  end
+
+  def test_can_return_special_ed_in_year
+    assert_equal 0.078, enrollment.special_education_in_year(2012)
+  end
+
+  def test_special_ed_in_year_truncates_at_3_decimals
+    assert_equal 0.079, enrollment.special_education_in_year(2013)
+  end
+
+  def test_can_return_remediation_by_year
+    remediation = { 2011 => 0.263,
+                    2010 => 0.294,
+                    2009 => 0.264
+                  }
+
+    assert_equal remediation, enrollment.remediation_by_year
+  end
+
+  def test_remediation_by_year_truncates_at_3_decimals
+    assert_equal 0.264, enrollment.remediation_by_year[2009]
+  end
+
+  def test_remediation_in_year_returns_nil_if_invalid_year_given
+    refute enrollment.remediation_in_year(1900)
+  end
+
+  def test_can_return_remediation_in_year
+    assert_equal 0.263, enrollment.remediation_in_year(2011)
+  end
+
+  def test_remediation_in_year_truncates_at_3_decimals
+    assert_equal 0.294, enrollment.remediation_in_year(2010)
   end
 end

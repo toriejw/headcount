@@ -3,7 +3,7 @@ require_relative '../lib/statewide_testing'
 class StatewideTestingTest < Minitest::Test
   attr_reader :statewide_testing
   def setup
-    @statewide_testing = StatewideTesting.new("ACADEMY 20", DataParser.new)
+    @statewide_testing ||= StatewideTesting.new("ACADEMY 20", DataParser.new)
   end
 
   def test_is_associated_with_a_district

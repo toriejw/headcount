@@ -9,24 +9,22 @@ class Enrollment
   include FormattingData
 
   def initialize(district_name, parser)
-    @district_name = district_name
-    @parser        = parser
-    @data          = parser.load_enrollment_data
+    @district_name ||= district_name
+    @parser          = parser
+    @data          ||= parser.load_enrollment_data
   end
 
   def dropout_rate_in_year(year)
     return nil unless valid_year?(year)
-    data_by_district          = dropout_rates_data_for_district
-    data_by_district_and_race = pull_data_by_category(data_by_district, "All Students")
-    data_by_year              = group_by_year(data_by_district_and_race)
+    data_by_race = pull_data_by_category(dropout_rates_data, "All Students")
+    data_by_year              = group_by_year(data_by_race)
     extract_data_point_for(year, data_by_year)
   end
 
   def dropout_rate_by_gender_in_year(year)
     return nil unless valid_year?(year)  ## this is repeated - way to return from this method via another method?
-    data_by_district    = dropout_rates_data_for_district
-    data_by_male        = pull_data_by_category(data_by_district, "Male Students")
-    data_by_female      = pull_data_by_category(data_by_district, "Female Students")
+    data_by_male        = pull_data_by_category(dropout_rates_data, "Male Students")
+    data_by_female      = pull_data_by_category(dropout_rates_data, "Female Students")
     male_data_by_year   = group_by_year(data_by_male)
     female_data_by_year = group_by_year(data_by_female)
     output = {female: extract_data_point_for(year, female_data_by_year),
@@ -35,15 +33,13 @@ class Enrollment
 
   def dropout_rate_by_race_in_year(year)
     return nil unless valid_year?(year)
-    data_by_district = dropout_rates_data_for_district
-    data_for_year    = group_by_year(data_by_district)[year.to_s]
+    data_for_year    = group_by_year(dropout_rates_data)[year.to_s]
     format_data_by_race(data_for_year, :category)
   end
 
   def dropout_rate_for_race_or_ethnicity(race)
     raise UnknownRaceError unless valid_race?(format_race(race))
-    data_by_district = dropout_rates_data_for_district
-    data_for_race    = pull_data_by_category(data_by_district, map_race.key(race))
+    data_for_race    = pull_data_by_category(dropout_rates_data, map_race.key(race))
     format_by_year(data_for_race)
   end
 
@@ -54,8 +50,7 @@ class Enrollment
   end
 
   def graduation_rate_by_year
-    data_by_district = grad_rates_data_for_district
-    format_by_year(data_by_district)
+    format_by_year(grad_rates_data)
   end
 
   def graduation_rate_in_year(year)
@@ -64,8 +59,7 @@ class Enrollment
   end
 
   def kindergarten_participation_by_year
-    data_by_district = kindergarten_participation_data_for_district
-    format_by_year(data_by_district)
+    format_by_year(kindergarten_participation_data)
   end
 
   def kindergarten_participation_in_year(year)
@@ -74,8 +68,7 @@ class Enrollment
   end
 
   def online_participation
-    data_by_district = online_data_for_district
-    format_by_year_with_ints(data_by_district)
+    format_by_year_with_ints(online_data)
   end
 
   def online_participation_in_year(year)
@@ -84,8 +77,7 @@ class Enrollment
   end
 
   def participation_by_year
-    data_by_district = enrollment_data_for_district
-    format_by_year_with_ints(data_by_district)
+    format_by_year_with_ints(enrollment_data)
   end
 
   def participation_in_year(year)
@@ -95,69 +87,66 @@ class Enrollment
 
   def participation_by_race_or_ethnicity(race)
     raise UnknownRaceError unless valid_race?(format_race(race))
-    data_by_district = race_participation_data_for_district
-    data_for_race    = pull_race_data(data_by_district, map_race.key(race))
+    data_for_race    = pull_race_data(race_participation_data, map_race.key(race))
     percents_only    = extract_data_format(data_for_race, "Percent")
     format_by_year(percents_only)
   end
 
   def participation_by_race_or_ethnicity_in_year(year)
     return nil unless valid_year?(year)
-    data_by_district = race_participation_data_for_district
-    percents_only    = extract_data_format(data_by_district, "Percent")
+    percents_only    = extract_data_format(race_participation_data, "Percent")
     data_for_year    = group_by_year(percents_only)[year.to_s]
     format_data_by_race(data_for_year, :race)
   end
 
   def special_education_by_year
-    # This method returns a hash with years as keys and an floating point three-significant digits representing a percentage.
-    #
-    # enrollment.special_education_by_year
-
+    format_by_year(special_ed_data)
   end
 
   def special_education_in_year(year)
     return nil unless valid_year?(year)
-    # This method takes one parameter:
-    #
-    # year as an integer for any year reported in the data
-    # A call to this method with any unknown year should return nil.
-    #
-    # The method returns a single three-digit floating point percentage.
-    # enrollment.special_education_in_year(2013) # => 0.105
+    special_education_by_year[year]
   end
 
-  def remediation
-
+  def remediation_by_year
+    format_by_year(remediation_data)
   end
 
   def remediation_in_year(year)
     return nil unless valid_year?(year)
-
+    remediation_by_year[year]
   end
 
-  def dropout_rates_data_for_district
+  def dropout_rates_data
     pull_district_data(data[:enrollment][:dropout_rates])
   end
 
-  def grad_rates_data_for_district
+  def grad_rates_data
     pull_district_data(data[:enrollment][:hs_grad_rates])
   end
 
-  def kindergarten_participation_data_for_district
+  def kindergarten_participation_data
     pull_district_data(data[:enrollment][:fullday_kindergartners])
   end
 
-  def online_data_for_district
+  def online_data
     pull_district_data(data[:enrollment][:online])
   end
 
-  def enrollment_data_for_district
+  def enrollment_data
     pull_district_data(data[:enrollment][:regular_enrollment])
   end
 
-  def race_participation_data_for_district
+  def race_participation_data
     pull_district_data(data[:enrollment][:by_race_ethnicity])
+  end
+
+  def special_ed_data
+    pull_district_data(data[:enrollment][:special_ed])
+  end
+
+  def remediation_data
+    pull_district_data(data[:enrollment][:remediation])
   end
 
   def format_data_by_race(data, variable)
@@ -215,6 +204,3 @@ class Enrollment
     }
   end
 end
-
-# enrollment = Enrollment.new("ACADEMY 20", DataParser.new)  # => #<Enrollment:0x007fbe390414c0 @district_name="ACADEMY 20", @parser=#<DataParser:0x007fbe39041560 @data_dir="../data", @valid_years=["2011", "2011", "2011", "2011", "2011", "2011", "2011", "2011", "2011", "2011", "2012", "2012", "2012", "2012", "2012", "2012", "2012", "2012", "2012", "2012", "2011", "2011", "2011", "2011", "2011", "2011", "2011", "2011", "2011", "2011", "2012", "2012", "2012", "2012", "2012", "2012", "2012", "2012", "2012", "2012", "2011", "2011", "2011", "2011", "2011", "2011", "2011", "2011", "2011", "2011", "2012", "2012", "2012", "2012", "2012", "2012", "2012", "2012", "2012", "2012", "2011", "2011", "2011", "2011", "2011", "2011", "2011", "2011", "2011", "2011", "2012", "2012", "2012", "2012", "2012", "2012", "2012", "2012", "2012", "2012", "2011", "2011", "2011", "2011", "2011", "2011", "2011", "2011", "2011", "2011", "2012", "2012", "2012", "2012", "2012", "2012", "2012", "2012", "2012", "2012", "...
-# enrollment.dropout_rate_for_race_or_ethnicity(:asian)      # => {2011=>0.0, 2012=>0.007}
