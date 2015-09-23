@@ -41,13 +41,8 @@ class DistrictRepository
   def find_all_matching(word_fragment)
     matches = []
     @districts_by_name.each do |name, district|
-      matches << name if name =~ /(#{word_fragment})/i
+      matches << district if name =~ /(#{word_fragment})/i # CHANGED NAME TO DISTRICT TO PASS TEST HARNESS
     end
     matches
   end
 end
-
-# dr = DistrictRepository.new
-# dr.load('/Users/Torie/Documents/turing/module_1/projects/headcount/test/fixtures/Pupil enrollment.csv')
-# district = dr.find_all_matching("a")
-# district

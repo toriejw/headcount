@@ -1,7 +1,6 @@
 require_relative 'errors'
 require_relative 'checking_valid_data'
 require_relative 'formatting_data'
-require_relative 'data_parser' # DELETE THIS LINE - NOT NEEDED IN TESTS
 
 class Enrollment
   attr_reader :district_name, :data
@@ -9,9 +8,9 @@ class Enrollment
   include FormattingData
 
   def initialize(district_name, parser)
-    @district_name ||= district_name
-    @parser          = parser
-    @data          ||= parser.load_enrollment_data
+    @district_name = district_name
+    @parser        = parser
+    @data          = parser.load_enrollment_data
   end
 
   def dropout_rate_in_year(year)
@@ -67,13 +66,13 @@ class Enrollment
     kindergarten_participation_by_year[year]
   end
 
-  def online_participation
+  def online_participation_by_year
     format_by_year_with_ints(online_data)
   end
 
   def online_participation_in_year(year)
     return nil unless valid_year?(year)
-    online_participation[year]
+    online_participation_by_year[year]
   end
 
   def participation_by_year
@@ -159,15 +158,6 @@ class Enrollment
     output
   end
 
-  def format_by_year(data)
-    output = {}
-    data.each do |data_point|
-      year = data_point[:timeframe].to_i
-      output[year] = format_number(data_point[:data])
-    end
-    output
-  end
-
   def format_by_year_with_ints(data)
     output = {}
     data.each do |data_point|
@@ -187,10 +177,6 @@ class Enrollment
 
   def extract_data_point_for(key, data)
     format_number(data[key.to_s][0][:data])
-  end
-
-  def extract_data_format(data_segment, format)
-    data_segment.keep_if { |data| data[:dataformat] == format }
   end
 
   def map_race

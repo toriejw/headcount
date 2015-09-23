@@ -153,11 +153,11 @@ class EnrollmentTest < Minitest::Test
                              2012 => 35,
                              2013 => 341,
                             }
-    assert_equal online_participation, enrollment.online_participation
+    assert_equal online_participation, enrollment.online_participation_by_year
   end
 
   def test_online_participation_by_year_truncates_at_3_decimals
-    assert_equal 35, enrollment.online_participation[2012]
+    assert_equal 35, enrollment.online_participation_by_year[2012]
   end
 
   def test_online_participation_in_year_returns_nil_if_invalid_year_given

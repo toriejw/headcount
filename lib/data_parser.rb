@@ -54,24 +54,24 @@ class DataParser
   end
 
   def load_statewide_testing_data(files = Files.statewide_testing_files)
-    statewide_testing_data ||= parse_data_from(files)
-    data = {statewide_testing: statewide_testing_data,
-            valid_years:       clean_valid_years
-           }
+    @statewide_testing_data ||= parse_data_from(files)
+    {statewide_testing: @statewide_testing_data,
+     valid_years:       clean_valid_years
+    }
   end
 
   def load_enrollment_data(files = Files.enrollment_files)
-    enrollment_data ||= parse_data_from(files)
-    data = {enrollment:  enrollment_data,
-            valid_years: clean_valid_years
-           }
+    @enrollment_data ||= parse_data_from(files)
+    {enrollment:  @enrollment_data,
+     valid_years: clean_valid_years
+    }
   end
 
   def load_economic_profile_data(files = Files.economic_profile_files)
-    economic_data ||= parse_data_from(files)
-    data = {economic_profile:  economic_data,
-            valid_years:       clean_valid_years
-           }
+    @economic_data ||= parse_data_from(files)
+    {economic_profile:  @economic_data,
+     valid_years:       clean_valid_years
+    }
   end
 
   def clean_valid_years

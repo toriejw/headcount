@@ -18,4 +18,8 @@ class DistrictTest < Minitest::Test
   def test_can_create_instance_of_enrollment
     assert_equal Enrollment, @district.enrollment.class
   end
+
+  def test_can_create_instance_of_economic_profile
+    assert_equal EconomicProfile, @district.economic_profile.class
+  end
 end
