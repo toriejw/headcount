@@ -1,5 +1,6 @@
 module FormattingData
   def pull_district_data(data_segment)
+    self.district_name = "Colorado" if district_name == "COLORADO"
     data_segment.select { |data| data[:location] == district_name }
   end
 
@@ -24,10 +25,8 @@ module FormattingData
   def format_number(num)
     if not_data.include?(num)
       num = nil
-    elsif num.length > 5
-      num = num[0..4]
-      num.to_f
     else
+      num = num.to_s[0..4]
       num.to_f
     end
   end

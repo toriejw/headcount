@@ -3,7 +3,8 @@ require_relative 'checking_valid_data'
 require_relative 'formatting_data'
 
 class Enrollment
-  attr_reader :district_name, :data
+  attr_reader :data
+  attr_accessor :district_name
   include CheckingValidData
   include FormattingData
 

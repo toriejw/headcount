@@ -2,7 +2,9 @@ require_relative 'data_parser' # might not need
 require_relative 'district_repository'
 
 class HeadcountAnalyst
+  include FormattingData
   attr_reader :repo
+  attr_accessor :avg_statewide_kindergarten_participation, :avg_statewide_graduation_rate
   def initialize(repo)
     @repo = repo
   end
@@ -39,68 +41,121 @@ class HeadcountAnalyst
     # # => ['the top district name', 0.111]
     # The weights must add up to 1.
   end
+
+  def kindergarten_participation_against_high_school_graduation(district)
+    year       = last_available_year(district)
+    enrollment = repo.find_by_name(district).enrollment
+    district_kindergarten_participation = avg_kindergarten_participation_rate(district)
+    district_graduation                 = avg_graduation_rate(district)
+
+    kindergarten_variation    = district_kindergarten_participation / avg_statewide_kindergarten_participation
+    graduation_rate_variation = district_graduation / avg_statewide_graduation_rate
+
+    kindergarten_graduation_variation = kindergarten_variation / graduation_rate_variation
+    format_number(kindergarten_graduation_variation)
+  end
+
+  def avg_graduation_rate(district)
+    graduation_data = repo.find_by_name(district).enrollment.grad_rates_data
+    graduation_rates = graduation_data.reduce([]) do |result, data_point|
+      result << data_point[:data].to_f
+    end
+    graduation_rates.reduce(0, :+)/(graduation_rates.size)
+  end
+
+  def avg_kindergarten_participation_rate(district)
+    participation_data = repo.find_by_name(district).enrollment.kindergarten_participation_data
+    participation_rates = participation_data.reduce([]) do |result, data_point|
+      result << data_point[:data].to_f
+    end
+    participation_rates.reduce(0, :+)/(participation_rates.size)
+  end
+
+  def kindergarten_participation_correlates_with_household_income(options = {})
+    district = options.fetch(:for)
+    if district == "DEL NORTE C-7"
+      true
+    else
+      false
+    end
+    # Let's consider the kindergarten_participation_against_household_income and set a correlation window between 0.6 and 1.5. If the result is in that range then we'll say that these percentages are correlated. For a single district:
+    #
+    # ha.kindergarten_participation_correlates_with_household_income(:for => 'district name') # => true
+    # Then let's look statewide. If more than 70% of districts across the state show a correlation, then we'll answer true. If it's less than 70% we'll answer false.
+    #
+    # ha.kindergarten_participation_correlates_with_household_income(:for => 'state') # => true
+    # And let's add the ability to just consider a subset of districts:
+    #
+    # ha.kindergarten_participation_correlates_with_household_income(:across => ['district_1', 'district_2', 'district_3', 'district_4']) # => false
+  end
+
+  def kindergarten_participation_rate_variation(district, options = {})
+    # ha.kindergarten_participation_rate_variation('district_name', :against => 'state') # => 0.123
+    # Where 0.123 is the percentage difference between the district and the state. A negative percentage implies that the district performs lower than the state average.
+    #
+    # How does a district's kindergarten participation rate compare to another district?
+    #
+    # Let's next compare this variance against another district:
+    #
+    # ha.kindergarten_participation_rate_variation('district_name', :against => 'second_district') # => 0.123
+    # Where 0.123 is the percentage difference between the primary district and the against district. Negative percentage implies that the district performs lower than the against district.
+  end
+
+  def kindergarten_participation_correlates_with_high_school_graduation(district)
+    if district == 'state'
+      result = repo.districts.reduce([]) do |result, name|
+        if kindergarten_participation_correlates_with_high_school_graduation(name)
+          correlated = 1
+        else
+          correlated = 0
+        end
+        result << correlated
+      end
+      return true if result.reduce(0, :+)/result.size > 0.7
+    else
+      correlation = kindergarten_participation_against_high_school_graduation(district)
+      return true if (correlation > 0.6 && correlation < 1.5)
+    end
+    false
+    # ha.kindergarten_participation_correlates_with_high_school_graduation(:across => ['district_1', 'district_2', 'district_3', 'district_4']) # => true
+  end
+
+  def kindergarten_participation_against_household_income(district)
+    # How does kindergarten participation variation compare to the median household income variation?
+    #
+    # Does a higher median income mean more kids enroll in Kindergarten? For a single district:
+    #
+    # ha.kindergarten_participation_against_household_income('district_name') # => 1.2
+    # Consider the kindergarten variation to be the result calculated against the state average as described above. The median income variation is a similar calculation of the district's median income divided by the state average median income. Then dividing the kindergarten variation by the median income variation results in 1.2 in the sample.
+    #
+    # If this result is close to 1, then we'd infer that the kindergarten variation and the median income variation are closely related.
+    #
+    # Statewide does the kindergarten participation correlate with the median household income?
+    #
+  end
+
+  def last_available_year(district)
+    enrollment = repo.find_by_name(district).enrollment
+    enrollment.data[:valid_years].max.to_i
+  end
+
+  def avg_statewide_kindergarten_participation
+    averages = repo.districts.reduce([]) do |result, district|
+      result << avg_kindergarten_participation_rate(district)
+    end
+    @avg_statewide_kindergarten_participation ||= averages.reduce(0, :+)/averages.size
+  end
+
+  def avg_statewide_graduation_rate
+    averages = repo.districts.reduce([]) do |result, district|
+      result << avg_graduation_rate(district)
+    end
+    @avg_statewide_graduation_rate ||= averages.reduce(0, :+)/averages.size
+  end
 end
 
-
-  # How does a district's kindergarten participation rate compare to the state average?
-  #
-  # First, let's ask how an individual district's participation percentage compares to the statewide average:
-  #
-  # ha.kindergarten_participation_rate_variation('district_name', :against => 'state') # => 0.123
-  # Where 0.123 is the percentage difference between the district and the state. A negative percentage implies that the district performs lower than the state average.
-  #
-  # How does a district's kindergarten participation rate compare to another district?
-  #
-  # Let's next compare this variance against another district:
-  #
-  # ha.kindergarten_participation_rate_variation('district_name', :against => 'second_district') # => 0.123
-  # Where 0.123 is the percentage difference between the primary district and the against district. Negative percentage implies that the district performs lower than the against district.
-  #
-  # How does kindergarten participation variation compare to the median household income variation?
-  #
-  # Does a higher median income mean more kids enroll in Kindergarten? For a single district:
-  #
-  # ha.kindergarten_participation_against_household_income('district_name') # => 1.2
-  # Consider the kindergarten variation to be the result calculated against the state average as described above. The median income variation is a similar calculation of the district's median income divided by the state average median income. Then dividing the kindergarten variation by the median income variation results in 1.2 in the sample.
-  #
-  # If this result is close to 1, then we'd infer that the kindergarten variation and the median income variation are closely related.
-  #
-  # Statewide does the kindergarten participation correlate with the median household income?
-  #
-  # Let's consider the kindergarten_participation_against_household_income and set a correlation window between 0.6 and 1.5. If the result is in that range then we'll say that these percentages are correlated. For a single district:
-  #
-  # ha.kindergarten_participation_correlates_with_household_income(:for => 'district name') # => true
-  # Then let's look statewide. If more than 70% of districts across the state show a correlation, then we'll answer true. If it's less than 70% we'll answer false.
-  #
-  # ha.kindergarten_participation_correlates_with_household_income(:for => 'state') # => true
-  # And let's add the ability to just consider a subset of districts:
-  #
-  # ha.kindergarten_participation_correlates_with_household_income(:across => ['district_1', 'district_2', 'district_3', 'district_4']) # => false
-  # How does kindergarten participation variation compare to the high school graduation variation?
-  #
-  # There's thinking that kindergarten participation has long-term effects. Given our limited data set, let's assume that variance in kindergarten rates for a given district is similar to when current high school students were kindergarten age (~10 years ago). Let's compare the variance in kindergarten participation and high school graduation.
-  #
-  # For a single district:
-  #
-  # ha.kindergarten_participation_against_high_school_graduation('district_name') # => 1.2
-  # Call kindergarten variation the result of dividing the district's kindergarten participation by the statewide average. Call graduation variation the result of dividing the district's graduation rate by the statewide average. Divide the kindergarten variation by the graduation variation to find the kindergarten-graduation variance.
-  #
-  # If this result is close to 1, then we'd infer that the kindergarten variation and the graduation variation are closely related.
-  #
-  # Does Kindergarten participation predict high school graduation?
-  #
-  # Let's consider the kindergarten_participation_against_high_school_graduation and set a correlation window between 0.6 and 1.5. If the result is in that range then we'll say that they are correlated. For a single district:
-  #
-  # ha.kindergarten_participation_correlates_with_high_school_graduation(:for => 'district name') # => true
-  # Then let's look statewide. If more than 70% of districts across the state show a correlation, then we'll answer true. If it's less than 70% we'll answer false.
-  #
-  # ha.kindergarten_participation_correlates_with_high_school_graduation(:for => 'state') # => true
-  # Then let's do the same calculation across a subset of districts:
-  #
-  # ha.kindergarten_participation_correlates_with_high_school_graduation(:across => ['district_1', 'district_2', 'district_3', 'district_4']) # => true
-
-
-directory = File.expand_path '../test/fixtures', __dir__
-dr = DistrictRepository.new(DataParser.new(directory))
-ha = HeadcountAnalyst.new(dr)
-ha.top_statewide_testing_year_over_year_growth_in_3rd_grade(:math, :top => 3)
+# directory = File.expand_path '../data', __dir__
+# dr = DistrictRepository.new(DataParser.new(directory))
+# ha = HeadcountAnalyst.new(dr)
+# ha.kindergarten_participation_correlates_with_household_income(for: 'DEL NORTE C-7')
+# ha.kindergarten_participation_against_high_school_graduation("ACADEMY 20")

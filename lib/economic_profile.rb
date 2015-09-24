@@ -3,7 +3,8 @@ require_relative 'data_parser'
 class EconomicProfile
   include CheckingValidData
   include FormattingData
-  attr_reader :district_name, :data
+  attr_reader :data
+  attr_accessor :district_name
   def initialize(district_name, parser)
     @district_name = district_name
     @parser        = parser

@@ -6,7 +6,8 @@ require 'pry'
 class StatewideTesting
   include CheckingValidData
   include FormattingData
-  attr_reader :district_name, :data
+  attr_reader :data
+  attr_accessor :district_name
 
   def initialize(district_name, parser)
     @district_name = district_name
