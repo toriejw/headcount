@@ -3,19 +3,10 @@ require_relative 'district'
 
 class DistrictRepository
   def self.from_csv(data_dir)
-    # file   = File.expand_path("Pupil enrollment.csv", data_dir)
     parser = DataParser.new(data_dir)
     DistrictRepository.new(parser)
   end
 
-  # def self.load(input_file)
-  #   self.districts = parser.load_districts(input_file)
-  #   load_data
-  # end
-  #
-  # def load_data
-  #   @data = parser.load_data
-  # end
   attr_accessor :districts_by_name, :parser
 
   def initialize(parser)

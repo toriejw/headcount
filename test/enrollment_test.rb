@@ -229,7 +229,9 @@ class EnrollmentTest < Minitest::Test
                                       :black => 0.031,
                                       :hispanic => 0.121,
                                       :pacific_islander => 0.004,
-                                      :white => 0.750
+                                      :white => 0.750,
+                                      :native_american => 0.004,
+                                      :two_or_more => 0.053,
                                     }
     assert_equal participation_by_race_in_2012, enrollment.participation_by_race_or_ethnicity_in_year(2012)
   end

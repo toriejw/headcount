@@ -9,6 +9,10 @@ class DataParser
     @valid_years ||= []
   end
 
+  def inspect
+    "#<#{self.class} for #{data_dir.inspect}>"
+  end
+
   def district_names
     @district_names ||= load_districts(
       File.join(data_dir, Files.statewide_testing_files[:third_grade])

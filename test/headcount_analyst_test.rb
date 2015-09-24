@@ -33,7 +33,7 @@ class HeadcountAnalystTest < Minitest::Test
   def test_can_return_top_statewide_testing_year_over_year_growth_for_top_district_across_all_subjects_for_given_weighting
     skip
     expected = ['the top district name', 0.123]
-    assert_equal expected, ha.top_statewide_testing_year_over_year_growth_in_3rd_grade(:weighting => {:math = 0.5, :reading => 0.5, :writing => 0.0})
+    assert_equal expected, ha.top_statewide_testing_year_over_year_growth_in_3rd_grade(:weighting => {:math => 0.5, :reading => 0.5, :writing => 0.0})
   end
 
   def test_top_statewide_testing_year_over_year_growth_for_top_district_across_all_subjects_for_given_weighting_checks_weights_add_to_1

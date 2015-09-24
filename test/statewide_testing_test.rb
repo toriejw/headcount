@@ -71,9 +71,9 @@ class StatewideTestingTest < Minitest::Test
   end
 
   def test_can_return_proficiency_for_subject_in_year
-    expected_math_scores_in_2012 = {3 => 0.830, 8 => 0.681}
-    actual_math_scores_in_2012   = statewide_testing.proficient_for_subject_in_year(:math, 2012)
-    assert_equal expected_math_scores_in_2012, actual_math_scores_in_2012
+    expected_math_score_in_2012 = 0.689
+    actual_math_score_in_2012   = statewide_testing.proficient_for_subject_in_year(:math, 2012)
+    assert_equal expected_math_score_in_2012, actual_math_score_in_2012
   end
 
   # THESE DON'T TEST TRUNCATION, ONLY NUM DECIMALS
@@ -99,8 +99,16 @@ class StatewideTestingTest < Minitest::Test
   end
 
   def test_proficiency_for_subject_in_year_returns_numbers_truncated_at_3_decimals
-    data_length = statewide_testing.proficient_for_subject_in_year(:math, 2011)[3].to_s.size
+    data_length = statewide_testing.proficient_for_subject_in_year(:math, 2012).to_s.size
     assert_equal 5, data_length
+  end
+
+  def test_it_omits_LNE_Excel_bullshit_0s_and_missing_data
+    # Writing,2013,Percent,LNE
+    # Math,2009,Percent,#VALUE!
+    woodlin  = StatewideTesting.new("WOODLIN R-104", DataParser.new)
+    expected = {}
+    assert_equal expected, woodlin.proficient_by_grade(3)
   end
 
 end

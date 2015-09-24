@@ -95,7 +95,7 @@ class Enrollment
     return nil unless valid_year?(year)
     percents_only    = extract_data_format(race_participation_data, "Percent")
     data_for_year    = group_by_year(percents_only)[year.to_s]
-    format_data_by_race(data_for_year, :race)
+    format_data_by_race_file(data_for_year, :race)
   end
 
   def special_education_by_year
@@ -149,13 +149,33 @@ class Enrollment
   end
 
   def format_data_by_race(data, variable)
+    # require "pry"; binding.pry
     output = {}
     data.each do |data_point|
       race = map_race[data_point[variable]]
       next unless race
       output[race] = format_number(data_point[:data])
     end
-    output
+    flatten(output)
+    # require "pry"; binding.pry
+    # data.reduce({}) {|result, data_point|
+    #   race = map_race[data_point[variable]]
+    #   if race
+    #     result[race] = format_number(data_point[:data])
+    #   end
+    #   result
+    # }
+  end
+
+  def format_data_by_race_file(data, variable)
+    # require "pry"; binding.pry
+    output = {}
+    data.each do |data_point|
+      race = map_for_race_file[data_point[variable]]
+      next unless race
+      output[race] = format_number(data_point[:data])
+    end
+    flatten(output)
   end
 
   def format_by_year_with_ints(data)
@@ -172,11 +192,7 @@ class Enrollment
   end
 
   def pull_race_data(data_segment, race)
-    data_segment.keep_if { |data| data[:race] == race }
-  end
-
-  def extract_data_point_for(key, data)
-    format_number(data[key.to_s][0][:data])
+    data_segment.select { |data| data[:race] == race }
   end
 
   def map_race
@@ -188,5 +204,16 @@ class Enrollment
      "Two or More Races" => :two_or_more,
      "White Students" => :white
     }
+  end
+
+  def map_for_race_file
+     {"American Indian Students" => :native_american,
+      "Native Hawaiian or Other Pacific Islander" => :pacific_islander,
+      "Two or more races" => :two_or_more,
+      "White Students" => :white,
+      "Asian Students" => :asian,
+      "Black Students" => :black,
+      "Hispanic Students" => :hispanic,
+     }
   end
 end

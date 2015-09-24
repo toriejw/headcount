@@ -1,10 +1,11 @@
 module FormattingData
   def pull_district_data(data_segment)
-    data_segment.keep_if { |data| data[:location] == district_name }
+    data_segment.select { |data| data[:location] == district_name }
   end
 
   def group_by_year(data_segment)
-    data_segment.group_by { |data| data[:timeframe] }
+    grouped_data = data_segment.group_by { |data| data[:timeframe] }
+    flatten(grouped_data)
   end
 
   def format_by_year(data)
@@ -13,7 +14,7 @@ module FormattingData
       year = data_point[:timeframe].to_i
       output[year] = format_number(data_point[:data])
     end
-    output
+    flatten(output)
   end
 
   def extract_data_format(data_segment, format)
@@ -21,23 +22,42 @@ module FormattingData
   end
 
   def format_number(num)
-    # return nil unless num.is_a? Numeric
-    if num.length > 5
+    if not_data.include?(num)
+      num = nil
+    elsif num.length > 5
       num = num[0..4]
+      num.to_f
+    else
+      num.to_f
     end
-    num.to_f
+  end
+
+  def flatten(data)
+    data.delete_if { |key, value| value.nil? }
+  end
+
+  def not_data
+    ["N/A", "LNE", "#VALUE!", nil]
   end
 
   def format_race(race)
-    race = race.to_s.capitalize
     case race
-    when "Pacific_islander"
+    when :pacific_islander
       race = "Pacific Islander"
-    when "Native_american"
+    when :native_american
       race = "Native American"
-    when "Two_or_more"
+    when :two_or_more
       race = "Two or more"
+    else
+      race.to_s.capitalize
     end
-    race
-  end                                                                                                             # => :pull_data_for_all_students_by_year
-end                                                                                                  # => :pull_data_for_all_students_by_year
+  end
+
+  def extract_data_point_for(key, data)
+    format_number(data[key.to_s][0][:data])
+  end
+end
+
+# include FormattingData
+#
+# format_race(:pacific_islander)

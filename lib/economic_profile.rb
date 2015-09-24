@@ -54,6 +54,6 @@ class EconomicProfile
   end
 
   def extract_poverty_level(data_segment, level)
-    data_segment.keep_if { |data| data[:poverty_level] == level }
+    data_segment.select { |data| data[:poverty_level] == level }
   end
 end
